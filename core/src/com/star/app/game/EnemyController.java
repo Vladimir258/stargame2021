@@ -4,21 +4,30 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.star.app.StarGame;
+import com.star.app.game.helpers.ObjectPool;
+import com.star.app.game.helpers.Poolable;
 import com.star.app.screen.ScreenManager;
 
-public class EnemyController {
-    class Asteroid {
+public class EnemyController extends ObjectPool<EnemyController.Asteroid> {
+
+    class Asteroid implements Poolable {
         private Vector2 position;
         private Vector2 velocity;
         private int rotation;
         private int startPosition;
+        private boolean active;
 
         public Vector2 getPosition() {
             return position;
         }
 
+        @Override
+        public boolean isActive() {
+            return active;
+        }
+
         public Asteroid(int stPosition) {
+            active = false;
             // В конструкторе рандомно создаем астероид, координаты и скорость
             startPosition = stPosition; // Точка появления астероида
             this.rotation = 0;
@@ -43,6 +52,14 @@ public class EnemyController {
                     break;
             }
             System.out.println(startPosition);
+        }
+
+        public void deactivate() {
+            active = false;
+        }
+
+        public void activate() {
+            active = true;
         }
 
         // Движение
@@ -84,36 +101,40 @@ public class EnemyController {
         }
     }
 
-    private final int ASTEROID_COUNT = 10; // Максимальное количество астероидов
-    private StarGame game;
     private Texture textureAsteroid;
-    private EnemyController.Asteroid[] asteroids;
 
-    public Asteroid[] getAsteroids() {
-        return asteroids;
+    @Override
+    protected Asteroid newObject() {
+        return new Asteroid(MathUtils.random(1, 4));
     }
 
-    public EnemyController() {
+    public EnemyController(int maxAsteroid) {
         this.textureAsteroid = new Texture("asteroid.png");
-        this.asteroids = new EnemyController.Asteroid[ASTEROID_COUNT]; // заполняем массив звезд 34 - 37
-        for (int i = 0; i < asteroids.length; i++) {
-            asteroids[i] =  new EnemyController.Asteroid(MathUtils.random(1, 4));
+        for (int i = 0; i < maxAsteroid; i++) {
+            this.setup();
         }
     }
 
     public void render(SpriteBatch batch) {
         // Отрисовываем астероиды
-        for (Asteroid asteroid : asteroids) {
-            batch.draw(textureAsteroid, asteroid.position.x - 32, asteroid.position.y - 32, 32, 32, 64, 64,
-                    1, 1, asteroid.rotation, 0, 0, 64, 64, false, false);
+        for (int i = 0; i < activeList.size(); i ++) {
+            batch.draw(textureAsteroid, activeList.get(i).position.x - 32, activeList.get(i).position.y - 32, 32, 32, 64, 64,
+                    1, 1, activeList.get(i).rotation, 0, 0, 64, 64, false, false);
         }
+    }
+
+
+    public void setup() {
+        getActiveElement().activate();
     }
 
     public void update(float dt) {
         // Обновляем координаты звезд
-        for (Asteroid asteroid : asteroids) {
-            asteroid.update(dt);
+
+        for (int i = 0; i < activeList.size(); i ++) {
+            activeList.get(i).update(dt);
         }
+        checkPool();
     }
 }
 

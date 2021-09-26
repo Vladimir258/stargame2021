@@ -25,7 +25,7 @@ public class GameController {
     public GameController() {
         this.background = new Background(this);
         this.hero = new Hero(this);
-        this.enemyController = new EnemyController();
+        this.enemyController = new EnemyController(10); // Пока количество астероидов так
         this.bulletController = new BulletController();
     }
 
@@ -34,20 +34,18 @@ public class GameController {
         hero.update(dt);
         enemyController.update(dt);
         bulletController.update(dt);
-//        checkCollisions();
+        checkCollisions();
     }
 
-//    public void checkCollisions() {
-//        int z = 0;
-//        for (int i = 0; i < bulletController.getActiveList().size(); i++) {
-//            BulletController.Bullet b = bulletController.getActiveList().get(i);
-//            if (enemyController.getAsteroids()[i].getPosition().dst(b.getPosition()) < 40) {
-//                // уничтожаем астероид
-//                b.deactivate();
-//                z++;
-//                System.out.println("Target elimenatted " + z);
-//            }
-//        }
-//    }
-
+    public void checkCollisions() {
+        for (int i = 0; i < bulletController.getActiveList().size(); i++) {
+            BulletController.Bullet b = bulletController.getActiveList().get(i);
+            for (int j = 0; j < enemyController.getActiveList().size(); j++) {
+                if (enemyController.getActiveList().get(j).getPosition().dst(b.getPosition()) < 32) {
+                    b.deactivate();
+                    enemyController.getActiveList().get(j).deactivate();
+                }
+            }
+        }
+    }
 }
