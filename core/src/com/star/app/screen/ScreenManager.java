@@ -1,4 +1,4 @@
-package com.star.game;
+package com.star.app.screen;
 
 import com.badlogic.gdx.Gdx;
 
