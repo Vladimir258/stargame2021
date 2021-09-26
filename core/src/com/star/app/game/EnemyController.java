@@ -1,16 +1,22 @@
-package com.star.game;
+package com.star.app.game;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.star.app.StarGame;
+import com.star.app.screen.ScreenManager;
 
-public class EnemyManager {
+public class EnemyController {
     class Asteroid {
         private Vector2 position;
         private Vector2 velocity;
         private int rotation;
         private int startPosition;
+
+        public Vector2 getPosition() {
+            return position;
+        }
 
         public Asteroid(int stPosition) {
             // В конструкторе рандомно создаем астероид, координаты и скорость
@@ -81,13 +87,17 @@ public class EnemyManager {
     private final int ASTEROID_COUNT = 10; // Максимальное количество астероидов
     private StarGame game;
     private Texture textureAsteroid;
-    private EnemyManager.Asteroid[] asteroids;
+    private EnemyController.Asteroid[] asteroids;
 
-    public EnemyManager() {
+    public Asteroid[] getAsteroids() {
+        return asteroids;
+    }
+
+    public EnemyController() {
         this.textureAsteroid = new Texture("asteroid.png");
-        this.asteroids = new EnemyManager.Asteroid[ASTEROID_COUNT]; // заполняем массив звезд 34 - 37
+        this.asteroids = new EnemyController.Asteroid[ASTEROID_COUNT]; // заполняем массив звезд 34 - 37
         for (int i = 0; i < asteroids.length; i++) {
-            asteroids[i] =  new EnemyManager.Asteroid(MathUtils.random(1, 4));
+            asteroids[i] =  new EnemyController.Asteroid(MathUtils.random(1, 4));
         }
     }
 

@@ -1,9 +1,11 @@
-package com.star.game;
+package com.star.app.game;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.star.app.StarGame;
+import com.star.app.screen.ScreenManager;
 
 public class Background {
     // Звезды часть bg, поэтому создадим внутренний класс звезда в классе bg
@@ -20,8 +22,8 @@ public class Background {
         }
         // Движение звезд
         public void update(float dt) {
-            position.x += (velocity.x - game.getHero().getLastDisplacement().x * 15) * dt;
-            position.y += (velocity.y - game.getHero().getLastDisplacement().y * 15) * dt;
+            position.x += (velocity.x - gc.getHero().getVelocity().x * 0.1) * dt;
+            position.y += (velocity.y - gc.getHero().getVelocity().y * 0.1) * dt;
 
             // Если звезда зашла за экран слева, перемещаем ее за экран справа
             // чтоб массив звезд циклично бегал от начала к концу, бессконечное звездное пространство
@@ -34,15 +36,15 @@ public class Background {
     }
 
     private final int STAR_COUNT = 1000; // Максимальное количество звезд
-    private StarGame game;
+    private GameController gc;
     private Texture textureCosmos;
     private Texture textureStar;
     private Star[] stars;
 
-    public Background(StarGame game) {
+    public Background(GameController gc) {
         this.textureCosmos = new Texture("bg.png");
         this.textureStar = new Texture("star16.png");
-        this.game = game;
+        this.gc = gc;
         this.stars = new Star[STAR_COUNT]; // заполняем массив звезд 34 - 37
         for (int i = 0; i < stars.length; i++) {
             stars[i] =  new Star();
