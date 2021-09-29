@@ -4,18 +4,34 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.star.app.screen.ScreenManager;
+import com.star.app.screen.utils.Assets;
 
 public class Hero {
     private GameController gc;
-    private Texture texture;
+    private TextureRegion texture;
     private Vector2 position;
     private Vector2 velocity; // вектор скорости
-    private float angel;
+    private float angle;
     private float enginePower;
     public float fireTimer;
+    private int score; // Сколько баллов набрали
+    private int scoreView; // Сколько баллов отображаем
+
+    public int getScore() {
+        return score;
+    }
+
+    public int getScoreView() {
+        return scoreView;
+    }
+
+    public void addScore(int amount) {
+        this.score += amount;
+    }
 
     public Vector2 getPosition() {
         return position;
@@ -27,44 +43,65 @@ public class Hero {
 
     public Hero(GameController gc) {
         this.gc = gc;
-        this.texture = new Texture("ship.png");
+        this.texture = Assets.getInstance().getAtlas().findRegion("ship");
         this.position = new Vector2(640, 360);
         this.velocity = new Vector2(0, 0);
-        this.angel = 0.0f;
+        this.angle = 0.0f;
         this.enginePower = 500.0f;
     }
 
     public void render(SpriteBatch batch) {
-        batch.draw(texture, position.x - 32, position.y - 32, 32, 32, 64, 64, 1, 1, angel,
-                0,0,64,64,false,false);
+        batch.draw(texture, position.x - 32, position.y - 32, 32, 32, 64, 64, 1, 1, angle);
     }
 
     public void update(float dt) {
 
         fireTimer += dt;
+
+        if(scoreView < score) {       // эффект плавного набора скорости на экране
+            scoreView += 1000 * dt;
+            if(scoreView > score) {
+                scoreView = score;
+            }
+        }
+
         if(Gdx.input.isKeyPressed(Input.Keys.P)) {
             if(fireTimer > 0.2f) {
                 fireTimer = 0.0f;
-                gc.getBulletController().setup(position.x, position.y,
-                        MathUtils.cosDeg(angel) * 500,
-                        MathUtils.sinDeg(angel) * 500); // Пока пуля вылетает из центра корабля
+
+                float wx;
+                float wy;
+
+                wx = position.x + MathUtils.cosDeg(angle + 90) * 25; // Место вылета пули x
+                wy = position.y + MathUtils.sinDeg(angle + 90) * 25; // Место вылета пули y
+
+                gc.getBulletController().setup(wx, wy,
+                        MathUtils.cosDeg(angle) * 500,
+                        MathUtils.sinDeg(angle) * 500); // Пока пуля вылетает из центра корабля
+
+                wx = position.x + MathUtils.cosDeg(angle - 90) * 25; // Место вылета пули x
+                wy = position.y + MathUtils.sinDeg(angle - 90) * 25; // Место вылета пули y
+
+                gc.getBulletController().setup(wx, wy,
+                        MathUtils.cosDeg(angle) * 500,
+                        MathUtils.sinDeg(angle) * 500); // Пока пуля вылетает из центра корабля
             }
         }
 
 
         if(Gdx.input.isKeyPressed(Input.Keys.A)) {
-            angel += 180.0f * dt;
+            angle += 180.0f * dt;
         }
         if(Gdx.input.isKeyPressed(Input.Keys.D)) {
-            angel -= 180.0f * dt;
+            angle -= 180.0f * dt;
         }
         if(Gdx.input.isKeyPressed(Input.Keys.W)) {
-            velocity.x += MathUtils.cosDeg(angel) * enginePower * dt;
-            velocity.y += MathUtils.sinDeg(angel) * enginePower * dt;
+            velocity.x += MathUtils.cosDeg(angle) * enginePower * dt;
+            velocity.y += MathUtils.sinDeg(angle) * enginePower * dt;
         } else
         if(Gdx.input.isKeyPressed(Input.Keys.S)) {
-            velocity.x -= MathUtils.cosDeg(angel) * enginePower / 2 * dt;
-            velocity.y -= MathUtils.sinDeg(angel) * enginePower / 2 * dt;
+            velocity.x -= MathUtils.cosDeg(angle) * enginePower / 2 * dt;
+            velocity.y -= MathUtils.sinDeg(angle) * enginePower / 2 * dt;
         }
 
         position.mulAdd(velocity,dt); // Сложить и умножить. Вместо двух строк position.x += velocity.x * dt;

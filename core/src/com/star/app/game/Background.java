@@ -2,10 +2,11 @@ package com.star.app.game;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.star.app.StarGame;
 import com.star.app.screen.ScreenManager;
+import com.star.app.screen.utils.Assets;
 
 public class Background {
     // Звезды часть bg, поэтому создадим внутренний класс звезда в классе bg
@@ -26,7 +27,7 @@ public class Background {
             position.y += (velocity.y - gc.getHero().getVelocity().y * 0.1) * dt;
 
             // Если звезда зашла за экран слева, перемещаем ее за экран справа
-            // чтоб массив звезд циклично бегал от начала к концу, бессконечное звездное пространство
+            // чтоб массив звезд циклично бегал от начала к концу, бесконечное звездное пространство
             if(position.x < -200) {
                 position.x = ScreenManager.SCREEN_WIDTH + 200;
                 position.y = MathUtils.random(-200, ScreenManager.SCREEN_HEIGTH + 200);
@@ -38,12 +39,12 @@ public class Background {
     private final int STAR_COUNT = 1000; // Максимальное количество звезд
     private GameController gc;
     private Texture textureCosmos;
-    private Texture textureStar;
+    private TextureRegion textureStar;
     private Star[] stars;
 
     public Background(GameController gc) {
-        this.textureCosmos = new Texture("bg.png");
-        this.textureStar = new Texture("star16.png");
+        this.textureCosmos = new Texture("images/bg.png");
+        this.textureStar = Assets.getInstance().getAtlas().findRegion("star16");
         this.gc = gc;
         this.stars = new Star[STAR_COUNT]; // заполняем массив звезд 34 - 37
         for (int i = 0; i < stars.length; i++) {
@@ -56,7 +57,7 @@ public class Background {
         // Отрисовываем звезды
         for (Star star : stars) {
             batch.draw(textureStar, star.position.x - 8, star.position.y - 8, 8, 8,
-                    16, 16, star.scale, star.scale, 0, 0, 0, 16, 16, false, false);
+                    16, 16, star.scale, star.scale, 0);
 
 //            // Мерцание звезд
 //            if (MathUtils.random(0, 1000) < 1) {

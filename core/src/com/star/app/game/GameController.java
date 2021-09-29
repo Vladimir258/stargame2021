@@ -1,5 +1,8 @@
 package com.star.app.game;
 
+import com.badlogic.gdx.math.MathUtils;
+import com.star.app.screen.ScreenManager;
+
 public class GameController {
     private Background background; // Наш бэкграунд
     private Hero hero;
@@ -25,8 +28,13 @@ public class GameController {
     public GameController() {
         this.background = new Background(this);
         this.hero = new Hero(this);
-        this.enemyController = new EnemyController(10); // Пока количество астероидов так
+        this.enemyController = new EnemyController(this);
         this.bulletController = new BulletController();
+        for (int i = 0; i < 3; i++) {
+            enemyController.setup(MathUtils.random(0, ScreenManager.SCREEN_WIDTH),
+                    MathUtils.random(0, ScreenManager.SCREEN_HEIGTH),
+                    MathUtils.random(-200,200),MathUtils.random(-200,200), 1.0f);
+        }
     }
 
     public void update(float dt) {
@@ -41,9 +49,17 @@ public class GameController {
         for (int i = 0; i < bulletController.getActiveList().size(); i++) {
             BulletController.Bullet b = bulletController.getActiveList().get(i);
             for (int j = 0; j < enemyController.getActiveList().size(); j++) {
-                if (enemyController.getActiveList().get(j).getPosition().dst(b.getPosition()) < 32) {
+//                if (enemyController.getActiveList().get(j).getPosition().dst(b.getPosition()) < 32) {
+//                    b.deactivate();
+//                    enemyController.getActiveList().get(j).deactivate();
+//                }
+                EnemyController.Asteroid a = enemyController.getActiveList().get(j);
+                if(a.getHitArea().contains(b.getPosition())) {
                     b.deactivate();
-                    enemyController.getActiveList().get(j).deactivate();
+                    if(a.takeDamage(1)) {
+                        hero.addScore(a.getHpMax() * 100);
+                    }
+                    break; // Выходим чтоб не сбить еще астероиды
                 }
             }
         }

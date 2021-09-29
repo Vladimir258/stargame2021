@@ -1,21 +1,41 @@
 package com.star.app.game;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.star.app.game.helpers.ObjectPool;
 import com.star.app.game.helpers.Poolable;
 import com.star.app.screen.ScreenManager;
+import com.star.app.screen.utils.Assets;
 
 public class EnemyController extends ObjectPool<EnemyController.Asteroid> {
 
     class Asteroid implements Poolable {
+        private TextureRegion texture;
         private Vector2 position;
         private Vector2 velocity;
-        private int rotation;
-        private int startPosition;
+        private int hp;
+        private int hpMax;
+        private float angle; // Угол показа изображения
+        private float rotationSpeed; // Скорость вращения
+        private float scale; // Масштаб
         private boolean active;
+        private Circle hitArea;
+        private GameController gc;
+
+
+        private final float BASE_SIZE = 256.0f;
+        private final float BASE_RADIUS = BASE_SIZE / 2;
+
+        public Circle getHitArea() {
+            return hitArea;
+        }
+
+        public int getHpMax() {
+            return hpMax;
+        }
 
         public Vector2 getPosition() {
             return position;
@@ -26,106 +46,95 @@ public class EnemyController extends ObjectPool<EnemyController.Asteroid> {
             return active;
         }
 
-        public Asteroid(int stPosition) {
+        public Asteroid(GameController gc) {
+            this.gc = gc;
+            this.position = new Vector2(0,0);
+            this.velocity = new Vector2(0,0);
+            this.hitArea = new Circle();
             active = false;
-            // В конструкторе рандомно создаем астероид, координаты и скорость
-            startPosition = stPosition; // Точка появления астероида
-            this.rotation = 0;
-            switch (startPosition) {
-                case 1:
-                    this.position = new Vector2(ScreenManager.SCREEN_WIDTH + 100, MathUtils.random(0, ScreenManager.SCREEN_HEIGTH));
-                    this.velocity = new Vector2(MathUtils.random(80, 300), 0);
-                    break;
-                case 2:
-                    this.position = new Vector2(-100, MathUtils.random(0, ScreenManager.SCREEN_HEIGTH));
-                    this.velocity = new Vector2(MathUtils.random(-300, -80), 0);
-                    break;
-                case 3:
-                    this.position = new Vector2(MathUtils.random(0,ScreenManager.SCREEN_WIDTH ), -50);
-                    this.velocity = new Vector2(0, MathUtils.random(80, 300));
-                    break;
-                case 4:
-                    this.position = new Vector2(MathUtils.random(0,ScreenManager.SCREEN_WIDTH ), ScreenManager.SCREEN_HEIGTH + 50);
-                    this.velocity = new Vector2(0, MathUtils.random(-300, -80));
-                    break;
-                default:
-                    break;
-            }
-            System.out.println(startPosition);
+            this.texture = Assets.getInstance().getAtlas().findRegion("asteroid");
+        }
+
+        public void render(SpriteBatch batch) {
+            batch.draw(texture, position.x - 128, position.y - 128, 128, 128,256,256,scale,scale,angle);
         }
 
         public void deactivate() {
             active = false;
         }
 
-        public void activate() {
-            active = true;
+        public void activate(float x, float y, float vx, float vy, float scale) {
+            this.position.set(x,y);
+            this.velocity.set(vx,vy);
+            this.hpMax = (int) (7 * scale); // Чтоб при разбиении астероидов у следующих жизнь была меньше
+            this.hp = hpMax;
+            this.angle = MathUtils.random(0.0f,360.0f);
+            this.rotationSpeed = MathUtils.random(-180.0f,180.0f);
+            this.hitArea.setPosition(position);
+
+            this.scale = scale;
+            this.active = true;
+            this.hitArea.setRadius(BASE_RADIUS * scale * 0.9f);
+        }
+
+        public boolean takeDamage(int amout) {
+            hp -= amout;
+            if(hp <= 0) {
+                deactivate();
+                if(scale > 0.3f) {
+                    for (int i = 0; i < 3; i++) {
+                        gc.getEnemyManager().setup(position.x, position.y,
+                                MathUtils.random(-200, 200), MathUtils.random(-200, 200), scale - 0.2f);
+                    }
+                }
+                return true;
+            } else {
+                return false;
+            }
         }
 
         // Движение
         public void update(float dt) {
-            rotation += 2;
-            switch (startPosition) {
-                case 1:
-                    position.x -= velocity.x * dt;
-                    if(position.x < -100) {
-                        position.x = ScreenManager.SCREEN_WIDTH;
-                        position.y = MathUtils.random(32, ScreenManager.SCREEN_HEIGTH - 32);
-                    }
-                    break;
-                case 2:
-                    position.x -= velocity.x * dt;
-                    if(position.x > ScreenManager.SCREEN_WIDTH + 100) {
-                        position.x = 0;
-                        position.y = MathUtils.random(32, ScreenManager.SCREEN_HEIGTH - 32);
-                    }
-                    break;
-                case 3:
-                    position.y += velocity.y * dt;
-                    if(position.y > ScreenManager.SCREEN_HEIGTH + 100) {
-                        position.x = MathUtils.random(32, ScreenManager.SCREEN_WIDTH - 32);
-                        position.y = 0;
-                    }
-                    break;
-                case 4:
-                    position.y += velocity.y * dt;
-                    if(position.y < - 100) {
-                        position.x = MathUtils.random(32, ScreenManager.SCREEN_WIDTH - 32);
-                        position.y = ScreenManager.SCREEN_HEIGTH + 100;
-                    }
-                    break;
-                default:
-                    break;
-            }
+            position.mulAdd(velocity, dt);
+            angle += rotationSpeed * dt;
 
+            if(position.x < -200) {
+                position.x = ScreenManager.SCREEN_WIDTH + 200;
+            }
+            if(position.x > ScreenManager.SCREEN_WIDTH + 200) {
+                position.x = -200;
+            }
+            if(position.y < -200) {
+                position.y = ScreenManager.SCREEN_HEIGTH + 200;
+            }
+            if(position.y > ScreenManager.SCREEN_HEIGTH + 200) {
+                position.y = -200;
+            }
+            hitArea.setPosition(position);
         }
     }
 
-    private Texture textureAsteroid;
+    private GameController gc;
 
     @Override
     protected Asteroid newObject() {
-        return new Asteroid(MathUtils.random(1, 4));
+        return new Asteroid(this.gc);
     }
 
-    public EnemyController(int maxAsteroid) {
-        this.textureAsteroid = new Texture("asteroid.png");
-        for (int i = 0; i < maxAsteroid; i++) {
-            this.setup();
-        }
+    public EnemyController(GameController gc) {
+        this.gc = gc;
     }
 
     public void render(SpriteBatch batch) {
         // Отрисовываем астероиды
         for (int i = 0; i < activeList.size(); i ++) {
-            batch.draw(textureAsteroid, activeList.get(i).position.x - 32, activeList.get(i).position.y - 32, 32, 32, 64, 64,
-                    1, 1, activeList.get(i).rotation, 0, 0, 64, 64, false, false);
+            Asteroid a = activeList.get(i);
+            a.render(batch);
         }
     }
 
-
-    public void setup() {
-        getActiveElement().activate();
+    public void setup(float x, float y, float vx, float vy, float scale) {
+        getActiveElement().activate(x, y, vx, vy, scale);
     }
 
     public void update(float dt) {
