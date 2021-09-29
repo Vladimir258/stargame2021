@@ -39,7 +39,9 @@ public class GameController {
 
     public void update(float dt) {
         background.update(dt);
-        hero.update(dt);
+        if(hero.getHp() > 0) {  // У коробля отказывает управление (еще дым прикрутить)
+            hero.update(dt);
+        }
         enemyController.update(dt);
         bulletController.update(dt);
         checkCollisions();
@@ -63,5 +65,16 @@ public class GameController {
                 }
             }
         }
+
+        for (int i = 0; i < enemyController.getActiveList().size(); i++) {  // Урон для коробля
+            EnemyController.Asteroid a = enemyController.getActiveList().get(i);
+            if(a.getHitArea().contains(hero.getPosition())) { // При столкновении с астероидом
+                hero.takeDamage(a.getHpMax()); // корабль получает урон равный жизньАстероида
+                hero.push(a.getVelocity()); // при столкновении с астероидом нас отбрасывает на силу равную ускорению астероида
+                a.takeDamage(a.getHpMax()); // астероид уничтожается
+                break;
+            }
+        }
+
     }
 }

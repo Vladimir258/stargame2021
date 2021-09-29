@@ -2,9 +2,9 @@ package com.star.app.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.star.app.screen.ScreenManager;
@@ -20,6 +20,24 @@ public class Hero {
     public float fireTimer;
     private int score; // Сколько баллов набрали
     private int scoreView; // Сколько баллов отображаем
+    private int hp;
+    private int hpMax;
+    private Circle hitArea;
+
+    private final float BASE_SIZE = 64;
+    private final float BASE_RADIUS = BASE_SIZE / 2;
+
+    public int getHp() {
+        return hp;
+    }
+
+    public Circle getHitArea() {
+        return hitArea;
+    }
+
+    public int getHpMax() {
+        return hpMax;
+    }
 
     public int getScore() {
         return score;
@@ -48,6 +66,23 @@ public class Hero {
         this.velocity = new Vector2(0, 0);
         this.angle = 0.0f;
         this.enginePower = 500.0f;
+
+        this.hitArea = new Circle();
+        this.hitArea.setPosition(position);
+        this.hitArea.setRadius(BASE_RADIUS * 0.9f);
+
+        this.hpMax = 100; // Чтоб при разбиении астероидов у следующих жизнь была меньше
+        this.hp = hpMax;
+    }
+
+    public boolean takeDamage(int amout) {
+        hp -= amout;
+        if(hp <= 0) {
+            // уничтожение корабля
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void render(SpriteBatch batch) {
@@ -57,6 +92,7 @@ public class Hero {
     public void update(float dt) {
 
         fireTimer += dt;
+        this.hitArea.setPosition(position);
 
         if(scoreView < score) {       // эффект плавного набора скорости на экране
             scoreView += 1000 * dt;
@@ -128,6 +164,9 @@ public class Hero {
             position.y = ScreenManager.SCREEN_HEIGTH - 32.0f;
             velocity.y *= -1;
         }
+    }
+    public void push(Vector2 pushVector) {
+        velocity.set(pushVector);
     }
 }
 

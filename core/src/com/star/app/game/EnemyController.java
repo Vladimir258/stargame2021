@@ -37,6 +37,10 @@ public class EnemyController extends ObjectPool<EnemyController.Asteroid> {
             return hpMax;
         }
 
+        public Vector2 getVelocity() {
+            return velocity;
+        }
+
         public Vector2 getPosition() {
             return position;
         }
