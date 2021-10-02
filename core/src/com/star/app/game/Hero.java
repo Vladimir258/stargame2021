@@ -30,7 +30,9 @@ public class Hero {
     private StringBuilder sbHP;
     private StringBuilder sbGameOver;
     private StringBuilder sbAmmo;
+    private StringBuilder sbMoney;
     private Weapon currentWeapon;
+    private int money; // Сколько баллов набрали
 
     private final float BASE_SIZE = 64;
     private final float BASE_RADIUS = BASE_SIZE / 2;
@@ -82,10 +84,11 @@ public class Hero {
         this.sbHP = new StringBuilder();
         this.sbGameOver = new StringBuilder();
         this.sbAmmo = new StringBuilder();
+        this.sbMoney = new StringBuilder();
 
         this.currentWeapon = new Weapon(
-                gc, this, "Laser", 0.2f, 1,
-                600, 10000,
+                gc, this, "Plasma", 0.2f, 1,
+                600, 100,
                 new Vector3[]{
                         new Vector3(28, 0, 0),
                         new Vector3(28, 70, 10),
@@ -113,12 +116,15 @@ public class Hero {
         sbHP.clear();
         sbGameOver.clear();
         sbAmmo.clear();
+        sbMoney.clear();
         sbScore.append("SCORE: ").append(scoreView); // Получаем счет
         font.draw(batch, sbScore, 20, 700); // Выводим счет на экран
         sbHP.append("HP: ").append(hp); // Получаем hp корабля
         font.draw(batch, sbHP, 20, 50); // Выводим hp корабля на экран
         sbAmmo.append("Ammo: ").append(currentWeapon.getCurBullets()).append("/").append(currentWeapon.getMaxBullets()); // Получаем количество патронов
         font.draw(batch, sbAmmo, 1030, 50); // Выводим количество патронов на экран
+        sbMoney.append("Money: ").append(money); // Получаем количество патронов
+        font.draw(batch, sbMoney, 1030, 700); // Выводим количество патронов на экран
 
         if(hp <= 0) {
             sbGameOver.append("Game Over");
@@ -127,7 +133,9 @@ public class Hero {
     }
 
     public void update(float dt) {
-
+        if(hp > 100) {
+            hp = 100;
+        }
         this.hitArea.setPosition(position);
         updateScore(dt);
         checkSpaceBorders();
@@ -160,6 +168,7 @@ public class Hero {
                 );
             }
         }
+
     }
 
     public void updateScore(float dt) {
@@ -228,6 +237,18 @@ public class Hero {
             stopKoef = 0;
         }
         velocity.scl(stopKoef); // scl() - Умножение вектора на скаляр
+    }
+
+    public void useBonus(int size, int type) {
+        if(type == 0 || type == 1 ) {
+            money += size;
+        }
+        if(type == 2 || type == 3 ) {
+            hp += size;
+        }
+        if(type == 4 || type == 5 ) {
+            currentWeapon.setCurBullets(size);
+        }
     }
 }
 

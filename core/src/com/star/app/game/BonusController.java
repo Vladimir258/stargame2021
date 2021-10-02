@@ -10,14 +10,16 @@ import com.star.app.game.helpers.Poolable;
 import com.star.app.screen.ScreenManager;
 import com.star.app.screen.utils.Assets;
 
-public class EnemyController extends ObjectPool<EnemyController.Asteroid> {
+public class BonusController extends ObjectPool<BonusController.Bonus> {
 
-    class Asteroid implements Poolable {
+    class Bonus implements Poolable {
         private TextureRegion texture;
         private Vector2 position;
         private Vector2 velocity;
-        private int hp;
-        private int hpMax;
+
+        private int size;
+        private int type;
+
         private float angle; // Угол показа изображения
         private float rotationSpeed; // Скорость вращения
         private float scale; // Масштаб
@@ -26,23 +28,11 @@ public class EnemyController extends ObjectPool<EnemyController.Asteroid> {
         private GameController gc;
 
 
-        private final float BASE_SIZE = 256.0f;
-        private final float BASE_RADIUS = BASE_SIZE / 2;
+        private final float BASE_SIZE = 32;
+       // private final float BASE_RADIUS = BASE_SIZE / 2;
 
         public Circle getHitArea() {
             return hitArea;
-        }
-
-        public int getHpMax() {
-            return hpMax;
-        }
-
-        public Vector2 getVelocity() {
-            return velocity;
-        }
-
-        public Vector2 getPosition() {
-            return position;
         }
 
         @Override
@@ -50,56 +40,37 @@ public class EnemyController extends ObjectPool<EnemyController.Asteroid> {
             return active;
         }
 
-        public Asteroid(GameController gc) {
+        public Bonus(GameController gc) {
             this.gc = gc;
             this.position = new Vector2(0,0);
             this.velocity = new Vector2(0,0);
             this.hitArea = new Circle();
             active = false;
-            this.texture = Assets.getInstance().getAtlas().findRegion("asteroid");
+
         }
 
         public void render(SpriteBatch batch) {
-            batch.draw(texture, position.x - 128, position.y - 128, 128, 128,256,256,scale,scale,angle);
+            batch.draw(texture, position.x - 16, position.y - 16, 16, 16,32,32,scale,scale,angle);
         }
 
         public void deactivate() {
             active = false;
         }
 
-        public void activate(float x, float y, float vx, float vy, float scale) {
-            this.position.set(x,y);
-            this.velocity.set(vx,vy);
-            this.hpMax = (int) (7 * scale); // Чтоб при разбиении астероидов у следующих жизнь была меньше
-            this.hp = hpMax;
-            this.angle = MathUtils.random(0.0f,360.0f);
-            this.rotationSpeed = MathUtils.random(-180.0f,180.0f);
+        public void activate(float x, float y, float vx, float vy, float scale, int size, int type) {
+            this.position.set(x, y);
+            this.velocity.set(vx, vy);
+            this.angle = MathUtils.random(0.0f, 360.0f);
+            this.rotationSpeed = MathUtils.random(-180.0f, 180.0f);
             this.hitArea.setPosition(position);
 
             this.scale = scale;
             this.active = true;
-            this.hitArea.setRadius(BASE_RADIUS * scale * 0.9f);
-        }
+            this.hitArea.setRadius(BASE_SIZE * scale);
 
-        public boolean takeDamage(int amout) {
-            hp -= amout;
-            if(hp <= 0) {
-                deactivate();
-                if(scale > 0.3f) {
-                    for (int i = 0; i < 3; i++) {
-                        gc.getEnemyManager().setup(position.x, position.y,
-                                MathUtils.random(-200, 200), MathUtils.random(-200, 200), scale - 0.2f);
-                    }
-                }
-                int bonusSize = this.hpMax * 2;         // Вычисляем максимальный бонус
-                int bonusType = MathUtils.random(0,9);  // Вычисляем шанс выпадения
-                gc.getBonusController().setup(position.x, position.y,
-                        50, 50, 1.0f, bonusSize, bonusType); // Создаем бонус
-
-                return true;
-            } else {
-                return false;
-            }
+            this.size = size;
+            this.type = type;
+            setSizeAndType(size, type);
         }
 
         // Движение
@@ -121,29 +92,67 @@ public class EnemyController extends ObjectPool<EnemyController.Asteroid> {
             }
             hitArea.setPosition(position);
         }
+
+        public void setSizeAndType(int s, int t) {
+            this.size = s;
+            switch (t) {
+                case 0:
+                    this.texture = Assets.getInstance().getAtlas().findRegion("coin");
+                    break;
+                case 1:
+                    this.texture = Assets.getInstance().getAtlas().findRegion("coin");
+                    break;
+                case 2:
+                    this.texture = Assets.getInstance().getAtlas().findRegion("remkit");
+                    break;
+                case 3:
+                    this.texture = Assets.getInstance().getAtlas().findRegion("remkit");
+                    break;
+                case 4:
+                    this.texture = Assets.getInstance().getAtlas().findRegion("ammo");
+                    break;
+                case 5:
+                    this.texture = Assets.getInstance().getAtlas().findRegion("ammo");
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public int getSize() {
+            return this.size;
+        }
+        public int getType() {
+            return this.type;
+        }
     }
+
+
 
     private GameController gc;
 
     @Override
-    protected Asteroid newObject() {
-        return new Asteroid(this.gc);
+    protected Bonus newObject() {
+        return new Bonus(this.gc);
     }
 
-    public EnemyController(GameController gc) {
+    public BonusController(GameController gc) {
         this.gc = gc;
     }
 
     public void render(SpriteBatch batch) {
         // Отрисовываем астероиды
         for (int i = 0; i < activeList.size(); i ++) {
-            Asteroid a = activeList.get(i);
-            a.render(batch);
+            Bonus b = activeList.get(i);
+            b.render(batch);
         }
     }
 
-    public void setup(float x, float y, float vx, float vy, float scale) {
-        getActiveElement().activate(x, y, vx, vy, scale);
+    public void setup(float x, float y, float vx, float vy, float scale, int size, int type) {
+        //TODO Исправить
+        if(type < 6) { // Пока такая проверка
+            getActiveElement().activate(x, y, vx, vy, scale, size, type);
+        }
     }
 
     public void update(float dt) {

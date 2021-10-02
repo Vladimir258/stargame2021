@@ -1,14 +1,14 @@
 name=game.pack
 filename=game.pack
 input=images
-output=..\core\assets\images
+output=
 
 alias=true
 alphaThreshold=0
 debug=false
 defaultFileFormat=PNG
-defaultFilterMag=Linear
-defaultFilterMin=Linear
+defaultFilterMag=Nearest
+defaultFilterMin=Nearest
 defaultFormat=RGBA8888
 defaultImageQuality=0.9
 duplicatePadding=true
