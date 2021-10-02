@@ -8,6 +8,7 @@ public class GameController {
     private Hero hero;
     private EnemyController enemyController;
     private BulletController bulletController;
+    private ParticleController particleController;
 
     public BulletController getBulletController() {
         return bulletController;
@@ -25,11 +26,18 @@ public class GameController {
         return enemyController;
     }
 
+    public ParticleController getParticleController() {
+        return particleController;
+    }
+
+
+
     public GameController() {
         this.background = new Background(this);
         this.hero = new Hero(this);
         this.enemyController = new EnemyController(this);
-        this.bulletController = new BulletController();
+        this.bulletController = new BulletController(this);
+        this.particleController = new ParticleController();
         for (int i = 0; i < 3; i++) {
             enemyController.setup(MathUtils.random(0, ScreenManager.SCREEN_WIDTH),
                     MathUtils.random(0, ScreenManager.SCREEN_HEIGTH),
@@ -39,24 +47,32 @@ public class GameController {
 
     public void update(float dt) {
         background.update(dt);
+        enemyController.update(dt);
+        bulletController.update(dt);
+        particleController.update(dt);
+        checkCollisions();
         if(hero.getHp() > 0) {  // У коробля отказывает управление (еще дым прикрутить)
             hero.update(dt);
         }
-        enemyController.update(dt);
-        bulletController.update(dt);
-        checkCollisions();
     }
 
     public void checkCollisions() {
         for (int i = 0; i < bulletController.getActiveList().size(); i++) {
             BulletController.Bullet b = bulletController.getActiveList().get(i);
             for (int j = 0; j < enemyController.getActiveList().size(); j++) {
-//                if (enemyController.getActiveList().get(j).getPosition().dst(b.getPosition()) < 32) {
-//                    b.deactivate();
-//                    enemyController.getActiveList().get(j).deactivate();
-//                }
                 EnemyController.Asteroid a = enemyController.getActiveList().get(j);
                 if(a.getHitArea().contains(b.getPosition())) {
+
+                    particleController.setup(
+                            b.getPosition().x + MathUtils.random(-4, 4),
+                            b.getPosition().y + MathUtils.random(-4, 4),
+                            b.getVelocity().x * -0.3f + MathUtils.random(-30, 30),
+                            b.getVelocity().y * -0.3f + MathUtils.random(-30, 30),
+                            0.2f, 2.3f, 1.7f,
+                            1.0f, 1.0f, 1.0f, 1.0f,
+                            0.0f, 0.0f, 1.0f, 0.0f
+                    );
+
                     b.deactivate();
                     if(a.takeDamage(1)) {
                         hero.addScore(a.getHpMax() * 100);
@@ -69,6 +85,17 @@ public class GameController {
         for (int i = 0; i < enemyController.getActiveList().size(); i++) {  // Урон для коробля
             EnemyController.Asteroid a = enemyController.getActiveList().get(i);
             if(a.getHitArea().contains(hero.getPosition())) { // При столкновении с астероидом
+
+//                particleController.setup(
+//                        hero.getPosition().x + MathUtils.random(-14, 14),
+//                        hero.getPosition().y + MathUtils.random(-14, 14),
+//                        hero.getVelocity().x + MathUtils.random(-130, 130),
+//                        hero.getVelocity().y + MathUtils.random(-130, 130),
+//                        0.2f, 2.3f, 1.7f,
+//                        1.0f, 1.0f, 1.0f, 1.0f,
+//                        0.0f, 0.0f, 1.0f, 1.0f
+//                );
+
                 hero.takeDamage(a.getHpMax()); // корабль получает урон равный жизньАстероида
                 hero.push(a.getVelocity()); // при столкновении с астероидом нас отбрасывает на силу равную ускорению астероида
                 a.takeDamage(a.getHpMax()); // астероид уничтожается
