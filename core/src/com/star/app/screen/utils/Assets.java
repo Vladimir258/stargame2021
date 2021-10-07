@@ -35,11 +35,17 @@ public class Assets {
 
     public void loadAssets(ScreenManager.ScreenType type) { // Загрузка ресурсов
         switch (type) {
+            case MENU:
+                assetManager.load("images/game.pack", TextureAtlas.class);
+                createStandardFont(72);
+                createStandardFont(24);
+                break;
             case GAME:
                 assetManager.load("images/game.pack", TextureAtlas.class);
                 createStandardFont(32);
-                assetManager.finishLoading();       // Подождать пока загрузятся все ресурсы (строки 39, 40)
-                textureAtlas = assetManager.get("images/game.pack", TextureAtlas.class);
+                // Подождать пока загрузятся все ресурсы (строки 39, 40)
+               // assetManager.finishLoading();   - убрали когда сделали LoadingScreen, так ка теперь здесь не нужно ждать загрузки ресурсов
+               // вместо этого у нас есть экран с отображением загрузки
                 break;
         }
     }
@@ -57,6 +63,10 @@ public class Assets {
         fontParameter.fontParameters.shadowOffsetY = 1;
         fontParameter.fontParameters.shadowColor = Color.DARK_GRAY;
         assetManager.load("fonts/font" + size + ".ttf", BitmapFont.class, fontParameter);
+    }
+    // Метод дает ссылку на атлас текстуру
+    public void makeLinks() {
+        textureAtlas = assetManager.get("images/game.pack", TextureAtlas.class);
     }
 
     public void clear() {       // Очистка ресурсов из памяти
