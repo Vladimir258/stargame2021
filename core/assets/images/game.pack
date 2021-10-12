@@ -31,30 +31,37 @@ smButton
   orig: 120, 32
   offset: 0, 0
   index: -1
-remkit
+smallButton
   rotate: false
   xy: 448, 2
-  size: 32, 32
-  orig: 32, 32
+  size: 33, 32
+  orig: 33, 32
   offset: 0, 0
   index: -1
-coin
+remkit
   rotate: false
   xy: 260, 68
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
-bullet
+coin
   rotate: false
   xy: 260, 102
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
-ammo
+bullet
   rotate: false
   xy: 260, 136
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+ammo
+  rotate: false
+  xy: 260, 170
   size: 32, 32
   orig: 32, 32
   offset: 0, 0

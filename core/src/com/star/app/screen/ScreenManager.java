@@ -6,11 +6,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.star.app.StarGame;
+import com.star.app.game.Hero;
 import com.star.app.screen.utils.Assets;
 
 public class ScreenManager {
     public enum ScreenType{ // Типы экранов
-        GAME, MENU
+        GAME, MENU, GAMEOVER
     }
     public static final int SCREEN_WIDTH = 1280;    // Gdx.graphics.getWidth();
     public static final int HALF_SCREEN_WIDTH = SCREEN_WIDTH / 2;
@@ -23,6 +24,7 @@ public class ScreenManager {
     private GameScreen gameScreen;
     private MenuScreen menuScreen;
     private Screen targetScreen;
+    private GameOverScreen gameOverScreen;
     private Viewport viewport;
 
 
@@ -46,6 +48,7 @@ public class ScreenManager {
         this.gameScreen = new GameScreen(batch);
         this.menuScreen = new MenuScreen(batch);
         this.loadingScreen = new LoadingScreen(batch);
+        this.gameOverScreen = new GameOverScreen(batch);
     }
 
 
@@ -56,7 +59,8 @@ public class ScreenManager {
     }
 
     // Вызывается когда идет смена экранов
-    public void changeScreen(ScreenType type) {
+    // Object...args - массив, чтоб по хитрому в switch в экран gameOverScreen передать Hero
+    public void changeScreen(ScreenType type, Object...args) {
         Screen screen = game.getScreen();
         // Полностью убераем все ресурсы для текущего экрана
         Assets.getInstance().clear();
@@ -70,9 +74,14 @@ public class ScreenManager {
                 targetScreen = gameScreen;
                 Assets.getInstance().loadAssets(ScreenType.GAME);
                 break;
-          case MENU:
+            case MENU:
                 targetScreen = menuScreen;
                 Assets.getInstance().loadAssets(ScreenType.MENU);
+                break;
+            case GAMEOVER:
+                targetScreen = gameOverScreen;
+                gameOverScreen.setDefeatedHero((Hero)args[0]);
+                Assets.getInstance().loadAssets(ScreenType.GAMEOVER);
                 break;
             default:
                 break;

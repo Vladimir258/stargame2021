@@ -31,10 +31,4 @@ public abstract class AbstractScreen implements Screen {
     public void hide() {
 
     }
-
-    // Метода срабатывает при выходе из приложения
-    @Override
-    public void dispose() {
-
-    }
 }

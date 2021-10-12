@@ -23,9 +23,14 @@ public class Background {
         }
         // Движение звезд
         public void update(float dt) {
-            position.x += (velocity.x - gc.getHero().getVelocity().x * 0.1) * dt;
-            position.y += (velocity.y - gc.getHero().getVelocity().y * 0.1) * dt;
-
+            // звезды двигаются относительно игрока
+            if(gc != null) {
+                position.x += (velocity.x - gc.getHero().getVelocity().x * 0.1) * dt;
+                position.y += (velocity.y - gc.getHero().getVelocity().y * 0.1) * dt;
+            } else {
+                // относительно dt
+                position.mulAdd(velocity, dt);
+            }
             // Если звезда зашла за экран слева, перемещаем ее за экран справа
             // чтоб массив звезд циклично бегал от начала к концу, бесконечное звездное пространство
             if(position.x < -200) {
@@ -72,5 +77,9 @@ public class Background {
         for (Star star : stars) {
             star.update(dt);
         }
+    }
+
+    public void dispose() {
+        textureCosmos.dispose();
     }
 }

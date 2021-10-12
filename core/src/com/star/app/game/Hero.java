@@ -14,6 +14,16 @@ import com.star.app.screen.ScreenManager;
 import com.star.app.screen.utils.Assets;
 
 public class Hero {
+
+    public enum Skill {
+        // TODO Здесь добавлять вещи для магазина
+        HP_MAX(20), HP(20), WEAPON(100);
+        int cost;
+        Skill(int cost) {
+            this.cost = cost;
+        }
+    }
+
     private GameController gc;
     private TextureRegion texture;
     private Vector2 position;
@@ -33,12 +43,27 @@ public class Hero {
     private StringBuilder sbMoney;
     private Weapon currentWeapon;
     private int money; // Сколько баллов набрали
+    private Shop shop;
+    private Weapon[] weapons;
+    private int weaponNum;
 
     private final float BASE_SIZE = 64;
     private final float BASE_RADIUS = BASE_SIZE / 2;
 
+    public Shop getShop() {
+        return shop;
+    }
+
     public int getHp() {
         return hp;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public int getMoney() {
+        return money;
     }
 
     public Circle getHitArea() {
@@ -65,6 +90,20 @@ public class Hero {
         return velocity;
     }
 
+    public boolean isAlive() {
+        return hp > 0;
+    }
+
+    // Достаточно ли денег для покупки
+    public boolean isMoneyEnough(int amount) {
+        return money >= amount;
+    }
+
+    // Вычитание денег за покупку
+    public void decreaseMoney(int amount) {
+        money -= amount;
+    }
+
     public Hero(GameController gc) {
         this.gc = gc;
         this.texture = Assets.getInstance().getAtlas().findRegion("ship");
@@ -79,22 +118,16 @@ public class Hero {
 
         this.hpMax = 100; // Чтоб при разбиении астероидов у следующих жизнь была меньше
         this.hp = hpMax;
-
+        this.shop = new Shop(this);
         this.sbScore = new StringBuilder();
         this.sbHP = new StringBuilder();
         this.sbGameOver = new StringBuilder();
         this.sbAmmo = new StringBuilder();
         this.sbMoney = new StringBuilder();
 
-        this.currentWeapon = new Weapon(
-                gc, this, "Plasma", 0.2f, 1,
-                600, 100,
-                new Vector3[]{
-                        new Vector3(28, 0, 0),
-                        new Vector3(28, 70, 10),
-                        new Vector3(28, -70, -10)
-                }
-        );
+        createWeapons();
+        this.weaponNum = 2;
+        this.currentWeapon = weapons[weaponNum];
     }
 
     public boolean takeDamage(int amout) {
@@ -119,9 +152,9 @@ public class Hero {
         sbMoney.clear();
         sbScore.append("SCORE: ").append(scoreView); // Получаем счет
         font.draw(batch, sbScore, 20, 700); // Выводим счет на экран
-        sbHP.append("HP: ").append(hp); // Получаем hp корабля
+        sbHP.append("HP: ").append(hp).append(" / ").append(hpMax); // Получаем hp корабля
         font.draw(batch, sbHP, 20, 50); // Выводим hp корабля на экран
-        sbAmmo.append("Ammo: ").append(currentWeapon.getCurBullets()).append("/").append(currentWeapon.getMaxBullets()); // Получаем количество патронов
+        sbAmmo.append("Ammo: ").append(currentWeapon.getCurBullets()).append(" / ").append(currentWeapon.getMaxBullets()); // Получаем количество патронов
         font.draw(batch, sbAmmo, 1030, 50); // Выводим количество патронов на экран
         sbMoney.append("Money: ").append(money); // Получаем количество патронов
         font.draw(batch, sbMoney, 1030, 700); // Выводим количество патронов на экран
@@ -129,6 +162,26 @@ public class Hero {
         if(hp <= 0) {
             sbGameOver.append("Game Over");
             font.draw(batch, sbGameOver, 540, 400); //
+        }
+    }
+
+    public boolean upgrade(Skill skill) {
+        switch (skill) {
+            case HP_MAX:
+                hpMax += 10;
+                return false;
+            case HP:
+                hp += 20;
+                return false;
+            case WEAPON:
+                if(weaponNum < weapons.length -1) {
+                    weaponNum++;
+                    currentWeapon = weapons[weaponNum];
+                    return true;
+                }
+                return false;
+            default:
+                return false;
         }
     }
 
@@ -214,6 +267,10 @@ public class Hero {
 
             }
         }
+        // Открытие магазина
+        if(Gdx.input.isKeyJustPressed(Input.Keys.U)) {
+            shop.setVisible(true);
+        }
 
         if(Gdx.input.isKeyPressed(Input.Keys.A)) {
             angle += 180.0f * dt;
@@ -249,6 +306,35 @@ public class Hero {
         if(type == 4 || type == 5 ) {
             currentWeapon.setCurBullets(size);
         }
+    }
+
+    private void createWeapons() {
+        weapons = new Weapon[] {
+                new Weapon(
+                        gc, this, "Plasma", 0.2f, 1,
+                        600, 100,
+                        new Vector3[]{
+                                new Vector3(28, 0, 0),
+                                new Vector3(28, 70, 10),
+                                new Vector3(28, -70, -10)
+                        }),
+                new Weapon(
+                        gc, this, "Laser", 0.2f, 2,
+                        1000, 400,
+                        new Vector3[]{
+                               // new Vector3(28, 0, 0),
+                                new Vector3(28, 70, 0),
+                                new Vector3(28, -70, 0)
+                        }),
+                new Weapon(
+                        gc, this, "Energy", 0.2f, 4,
+                        2000, 1000,
+                        new Vector3[]{
+                               // new Vector3(0, 0, 0),
+                              //  new Vector3(0, 0, 0),
+                                new Vector3(28, 0, 0)
+                        })
+        };
     }
 }
 

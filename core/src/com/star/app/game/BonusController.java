@@ -156,8 +156,6 @@ public class BonusController extends ObjectPool<BonusController.Bonus> {
     }
 
     public void update(float dt) {
-        // Обновляем координаты звезд
-
         for (int i = 0; i < activeList.size(); i ++) {
             activeList.get(i).update(dt);
         }

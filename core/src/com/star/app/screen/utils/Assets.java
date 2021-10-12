@@ -35,6 +35,12 @@ public class Assets {
 
     public void loadAssets(ScreenManager.ScreenType type) { // Загрузка ресурсов
         switch (type) {
+            case GAMEOVER:
+                assetManager.load("images/game.pack", TextureAtlas.class);
+                createStandardFont(72);
+                createStandardFont(48);
+                createStandardFont(24);
+                break;
             case MENU:
                 assetManager.load("images/game.pack", TextureAtlas.class);
                 createStandardFont(72);
@@ -43,6 +49,7 @@ public class Assets {
             case GAME:
                 assetManager.load("images/game.pack", TextureAtlas.class);
                 createStandardFont(32);
+                createStandardFont(24);
                 // Подождать пока загрузятся все ресурсы (строки 39, 40)
                // assetManager.finishLoading();   - убрали когда сделали LoadingScreen, так ка теперь здесь не нужно ждать загрузки ресурсов
                // вместо этого у нас есть экран с отображением загрузки

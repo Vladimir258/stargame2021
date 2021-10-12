@@ -17,7 +17,7 @@ public class GameScreen  extends AbstractScreen{
     @Override
     public void show() {
         Assets.getInstance().loadAssets(ScreenManager.ScreenType.GAME); // Загрузить ресурсы для экрана GAME
-        this.gameController = new GameController();
+        this.gameController = new GameController(batch);
         this.worldRender = new WorldRender(gameController, batch);
     }
 
@@ -25,6 +25,10 @@ public class GameScreen  extends AbstractScreen{
     public void render(float delta) {
         gameController.update(delta);
         worldRender.render();
+    }
 
+    @Override
+    public void dispose() {
+        gameController.dispose();
     }
 }

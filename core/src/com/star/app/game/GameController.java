@@ -1,6 +1,9 @@
 package com.star.app.game;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.star.app.screen.ScreenManager;
 
 public class GameController {
@@ -10,6 +13,7 @@ public class GameController {
     private BulletController bulletController;
     private ParticleController particleController;
     private BonusController bonusController;
+    private Stage stage;
 
     public BulletController getBulletController() {
         return bulletController;
@@ -21,6 +25,10 @@ public class GameController {
 
     public Background getBackground() {
         return background;
+    }
+
+    public Stage getStage() {
+        return stage;
     }
 
     public EnemyController getEnemyManager() {
@@ -36,15 +44,15 @@ public class GameController {
     }
 
 
-
-
-
-    public GameController() {
+    public GameController(SpriteBatch batch) {
         this.background = new Background(this);
         this.hero = new Hero(this);
         this.enemyController = new EnemyController(this);
         this.bulletController = new BulletController(this);
         this.bonusController = new BonusController(this);
+        this.stage = new Stage(ScreenManager.getInstance().getViewport(), batch);
+        this.stage.addActor(hero.getShop());
+        Gdx.input.setInputProcessor(stage);
         this.particleController = new ParticleController();
         for (int i = 0; i < 3; i++) {
             enemyController.setup(MathUtils.random(0, ScreenManager.SCREEN_WIDTH),
@@ -60,9 +68,12 @@ public class GameController {
         particleController.update(dt);
         bonusController.update(dt);
         checkCollisions();
-        if(hero.getHp() > 0) {  // У коробля отказывает управление (еще дым прикрутить)
-            hero.update(dt);
+        hero.update(dt);
+        if(!hero.isAlive()) {  // У коробля отказывает управление (еще дым прикрутить)
+            //
+            ScreenManager.getInstance().changeScreen(ScreenManager.ScreenType.GAMEOVER, hero);
         }
+        stage.act(dt);
     }
 
     public void checkCollisions() {
@@ -70,7 +81,21 @@ public class GameController {
         for (int i = 0; i < bonusController.getActiveList().size(); i++) {
             BonusController.Bonus a = bonusController.getActiveList().get(i);
             if(a.getHitArea().contains(hero.getPosition())) { // При столкновении с астероидом
-                hero.useBonus(a.getSize(),a.getType()); // корабль получает урон равный жизньАстероида
+                hero.useBonus(a.getSize(),a.getType()); // При столкновении с бонусом кораблю перепадают бонусы)))
+
+                for (int j = 0; j < 16; j++) {
+                    float angle = 6.28f / 16.0f * j;
+                    particleController.setup(
+                            hero.getPosition().x + MathUtils.random(-4, 4),
+                            hero.getPosition().y + MathUtils.random(-4, 4),
+                            (float) Math.cos(angle) * 100,
+                            (float) Math.sin(angle) * 100,
+                            0.8f, 3.0f, 1.8f,
+                            0.0f, 1.0f, 0.0f, 1.0f,
+                            1.0f, 1.0f, 1.0f, 0.5f
+                    );
+                }
+
                 a.deactivate(); //
                 break;
             }
@@ -111,10 +136,9 @@ public class GameController {
                 break;
             }
         }
+    }
 
-
-
-
-
+    public  void dispose() {
+        background.dispose();
     }
 }
