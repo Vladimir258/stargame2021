@@ -52,6 +52,7 @@ public class GameController {
         this.bonusController = new BonusController(this);
         this.stage = new Stage(ScreenManager.getInstance().getViewport(), batch);
         this.stage.addActor(hero.getShop());
+        this.stage.addActor(hero.getGamePause());
         Gdx.input.setInputProcessor(stage);
         this.particleController = new ParticleController();
         for (int i = 0; i < 3; i++) {
@@ -62,24 +63,34 @@ public class GameController {
     }
 
     public void update(float dt) {
-        background.update(dt);
-        enemyController.update(dt);
-        bulletController.update(dt);
-        particleController.update(dt);
-        bonusController.update(dt);
-        checkCollisions();
-        hero.update(dt);
-        if(!hero.isAlive()) {  // У коробля отказывает управление (еще дым прикрутить)
-            //
-            ScreenManager.getInstance().changeScreen(ScreenManager.ScreenType.GAMEOVER, hero);
+        if (!hero.isPause()) {
+
+            background.update(dt);
+            enemyController.update(dt);
+            bulletController.update(dt);
+            particleController.update(dt);
+            bonusController.update(dt);
+            checkCollisions();
+            hero.update(dt);
+            if (!hero.isAlive()) {  // У коробля отказывает управление (еще дым прикрутить)
+                //
+                ScreenManager.getInstance().changeScreen(ScreenManager.ScreenType.GAMEOVER, hero);
+            }
+            stage.act(dt);
+
         }
-        stage.act(dt);
     }
 
     public void checkCollisions() {
         // Столкновение корабля с бонусом
         for (int i = 0; i < bonusController.getActiveList().size(); i++) {
             BonusController.Bonus a = bonusController.getActiveList().get(i);
+            // TODO непойму почему hero переодически скачет от бобнуса к бонусу, получилось забавно
+            // TODO но где-то ошибка, может метод dst() заменить в comeToHero. Подумаю
+           if(hero.comeToHero(a)) {
+               a.setPosition(hero.getPosition());
+           };
+
             if(a.getHitArea().contains(hero.getPosition())) { // При столкновении с астероидом
                 hero.useBonus(a.getSize(),a.getType()); // При столкновении с бонусом кораблю перепадают бонусы)))
 
@@ -95,7 +106,6 @@ public class GameController {
                             1.0f, 1.0f, 1.0f, 0.5f
                     );
                 }
-
                 a.deactivate(); //
                 break;
             }

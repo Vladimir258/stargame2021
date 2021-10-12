@@ -24,6 +24,7 @@ public class Hero {
         }
     }
 
+    private boolean pause;
     private GameController gc;
     private TextureRegion texture;
     private Vector2 position;
@@ -44,14 +45,27 @@ public class Hero {
     private Weapon currentWeapon;
     private int money; // Сколько баллов набрали
     private Shop shop;
+    private GamePause gamePause;
     private Weapon[] weapons;
     private int weaponNum;
 
     private final float BASE_SIZE = 64;
     private final float BASE_RADIUS = BASE_SIZE / 2;
 
+    public boolean isPause() {
+        return pause;
+    }
+
+    public void setPause(boolean pause) {
+        this.pause = pause;
+    }
+
     public Shop getShop() {
         return shop;
+    }
+
+    public GamePause getGamePause() {
+        return gamePause;
     }
 
     public int getHp() {
@@ -105,6 +119,7 @@ public class Hero {
     }
 
     public Hero(GameController gc) {
+        this.pause = false;
         this.gc = gc;
         this.texture = Assets.getInstance().getAtlas().findRegion("ship");
         this.position = new Vector2(640, 360);
@@ -119,6 +134,7 @@ public class Hero {
         this.hpMax = 100; // Чтоб при разбиении астероидов у следующих жизнь была меньше
         this.hp = hpMax;
         this.shop = new Shop(this);
+        this.gamePause = new GamePause(this);
         this.sbScore = new StringBuilder();
         this.sbHP = new StringBuilder();
         this.sbGameOver = new StringBuilder();
@@ -130,6 +146,12 @@ public class Hero {
         this.currentWeapon = weapons[weaponNum];
     }
 
+    public boolean comeToHero(BonusController.Bonus bb) {
+        if(this.position.dst(bb.getPosition()) < 30) {
+           return true;
+        }
+        return false;
+    }
     public boolean takeDamage(int amout) {
         hp -= amout;
         if(hp <= 0) {
@@ -270,6 +292,13 @@ public class Hero {
         // Открытие магазина
         if(Gdx.input.isKeyJustPressed(Input.Keys.U)) {
             shop.setVisible(true);
+            pause = true;
+        }
+
+        // Меню паузы
+        if(Gdx.input.isKeyJustPressed(Input.Keys.J)) {
+            gamePause.setVisible(true);
+            pause = true;
         }
 
         if(Gdx.input.isKeyPressed(Input.Keys.A)) {

@@ -14,6 +14,8 @@ public class BonusController extends ObjectPool<BonusController.Bonus> {
 
     class Bonus implements Poolable {
         private TextureRegion texture;
+
+
         private Vector2 position;
         private Vector2 velocity;
 
@@ -35,6 +37,15 @@ public class BonusController extends ObjectPool<BonusController.Bonus> {
             return hitArea;
         }
 
+        public void setPosition(Vector2 position) {
+            this.position = position;
+        }
+
+        public Vector2 getPosition() {
+            return position;
+        }
+
+
         @Override
         public boolean isActive() {
             return active;
@@ -48,6 +59,8 @@ public class BonusController extends ObjectPool<BonusController.Bonus> {
             active = false;
 
         }
+
+
 
         public void render(SpriteBatch batch) {
             batch.draw(texture, position.x - 16, position.y - 16, 16, 16,32,32,scale,scale,angle);
