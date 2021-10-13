@@ -70,7 +70,7 @@ public class EnemyController extends ObjectPool<EnemyController.Asteroid> {
         public void activate(float x, float y, float vx, float vy, float scale) {
             this.position.set(x,y);
             this.velocity.set(vx,vy);
-            this.hpMax = (int) (7 * scale); // Чтоб при разбиении астероидов у следующих жизнь была меньше
+            this.hpMax = (int) ((5 + gc.getLevel() * 2)* scale); // Чтоб при разбиении астероидов у следующих жизнь была меньше
             this.hp = hpMax;
             this.angle = MathUtils.random(0.0f,360.0f);
             this.rotationSpeed = MathUtils.random(-180.0f,180.0f);
@@ -107,17 +107,17 @@ public class EnemyController extends ObjectPool<EnemyController.Asteroid> {
             position.mulAdd(velocity, dt);
             angle += rotationSpeed * dt;
 
-            if(position.x < -200) {
-                position.x = ScreenManager.SCREEN_WIDTH + 200;
+            if(position.x < -hitArea.radius) {
+                position.x = ScreenManager.SCREEN_WIDTH + hitArea.radius;
             }
-            if(position.x > ScreenManager.SCREEN_WIDTH + 200) {
-                position.x = -200;
+            if(position.x > ScreenManager.SCREEN_WIDTH + hitArea.radius) {
+                position.x = -hitArea.radius;
             }
-            if(position.y < -200) {
-                position.y = ScreenManager.SCREEN_HEIGTH + 200;
+            if(position.y < -hitArea.radius) {
+                position.y = ScreenManager.SCREEN_HEIGTH + hitArea.radius;
             }
-            if(position.y > ScreenManager.SCREEN_HEIGTH + 200) {
-                position.y = -200;
+            if(position.y > ScreenManager.SCREEN_HEIGTH + hitArea.radius) {
+                position.y = -hitArea.radius;
             }
             hitArea.setPosition(position);
         }

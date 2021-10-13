@@ -15,6 +15,16 @@ public class GameController {
     private ParticleController particleController;
     private BonusController bonusController;
     private Stage stage;
+    private int level;
+    private float roundTimer;
+
+    public float getRoundTimer() {
+        return roundTimer;
+    }
+
+    public int getLevel() {
+        return level;
+    }
 
     public BulletController getBulletController() {
         return bulletController;
@@ -56,7 +66,15 @@ public class GameController {
         this.stage.addActor(hero.getGamePause());
         Gdx.input.setInputProcessor(stage);
         this.particleController = new ParticleController();
-        for (int i = 0; i < 3; i++) {
+        this.level = 1;
+        this.roundTimer = 0.0f;
+
+        generateBigAsteroids(1);
+    }
+
+    // Метод включения следюущего уровня
+    private void generateBigAsteroids(int count) {
+        for (int i = 0; i < count; i++) {
             enemyController.setup(MathUtils.random(0, ScreenManager.SCREEN_WIDTH),
                     MathUtils.random(0, ScreenManager.SCREEN_HEIGTH),
                     MathUtils.random(-200,200),MathUtils.random(-200,200), 1.0f);
@@ -66,6 +84,7 @@ public class GameController {
     public void update(float dt) {
         if (!hero.isPause()) {
 
+            roundTimer += dt;
             background.update(dt);
             enemyController.update(dt);
             bulletController.update(dt);
@@ -74,9 +93,15 @@ public class GameController {
             checkCollisions();
             hero.update(dt);
             if (!hero.isAlive()) {  // У коробля отказывает управление (еще дым прикрутить)
-                //
                 ScreenManager.getInstance().changeScreen(ScreenManager.ScreenType.GAMEOVER, hero);
             }
+            // Если закончились астероиды
+            if(enemyController.getActiveList().size() == 0) {
+                level++;
+                generateBigAsteroids(level);
+                roundTimer = 0.0f;
+            }
+
             stage.act(dt);
 
         }
@@ -90,6 +115,7 @@ public class GameController {
             // TODO но где-то ошибка, может метод dst() заменить в comeToHero. Подумаю
            if(hero.comeToHero(a)) {
               // a.setPosition(hero.getPosition());
+               // Слежение за мышкой делается подобно
                Vector2  tmpVec = new Vector2().set(hero.getPosition()).sub(a.getPosition()).nor();
                a.getVelocity().mulAdd(tmpVec, 200.0f);
            };
@@ -143,7 +169,7 @@ public class GameController {
         for (int i = 0; i < enemyController.getActiveList().size(); i++) {  // Урон для коробля
             EnemyController.Asteroid a = enemyController.getActiveList().get(i);
             if(a.getHitArea().contains(hero.getPosition())) { // При столкновении с астероидом
-                hero.takeDamage(a.getHpMax()); // корабль получает урон равный жизньАстероида
+                hero.takeDamage(level * 2 + a.getHpMax()); // корабль получает урон равный жизньАстероида
                 hero.push(a.getVelocity()); // при столкновении с астероидом нас отбрасывает на силу равную ускорению астероида
                 a.takeDamage(a.getHpMax()); // астероид уничтожается
                 break;
