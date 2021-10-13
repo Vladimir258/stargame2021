@@ -147,11 +147,12 @@ public class Hero {
     }
 
     public boolean comeToHero(BonusController.Bonus bb) {
-        if(this.position.dst(bb.getPosition()) < 30) {
+        if(this.position.dst(bb.getPosition()) < 60) {
            return true;
         }
         return false;
     }
+
     public boolean takeDamage(int amout) {
         hp -= amout;
         if(hp <= 0) {

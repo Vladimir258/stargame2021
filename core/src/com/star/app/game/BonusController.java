@@ -45,6 +45,9 @@ public class BonusController extends ObjectPool<BonusController.Bonus> {
             return position;
         }
 
+        public Vector2 getVelocity() {
+            return velocity;
+        }
 
         @Override
         public boolean isActive() {

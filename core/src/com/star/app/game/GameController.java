@@ -3,6 +3,7 @@ package com.star.app.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.star.app.screen.ScreenManager;
 
@@ -88,7 +89,9 @@ public class GameController {
             // TODO непойму почему hero переодически скачет от бобнуса к бонусу, получилось забавно
             // TODO но где-то ошибка, может метод dst() заменить в comeToHero. Подумаю
            if(hero.comeToHero(a)) {
-               a.setPosition(hero.getPosition());
+              // a.setPosition(hero.getPosition());
+               Vector2  tmpVec = new Vector2().set(hero.getPosition()).sub(a.getPosition()).nor();
+               a.getVelocity().mulAdd(tmpVec, 200.0f);
            };
 
             if(a.getHitArea().contains(hero.getPosition())) { // При столкновении с астероидом
