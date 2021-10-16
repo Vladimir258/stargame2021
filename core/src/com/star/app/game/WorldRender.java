@@ -46,6 +46,7 @@ public class WorldRender {
 
     // Отрисовка
     public void render () {
+        frameBuffer.begin();
         ScreenUtils.clear(0, 0.5f, 0.2f, 1);
         batch.begin();
         gc.getBackground().render(batch);	// Передаем batch в метод render, чтоб batch отрисовал задний фон
@@ -61,7 +62,23 @@ public class WorldRender {
             sb.append("Level ").append(gc.getLevel());
             font32.draw(batch, sb, 0, (float)(ScreenManager.SCREEN_HEIGTH / 2), ScreenManager.SCREEN_WIDTH, Align.center, false);
         }
+        batch.end();
+        frameBuffer.end();
 
+        batch.begin();
+        batch.setShader(shaderProgram);
+        shaderProgram.setUniformf("px", gc.getHero().getPosition().x / ScreenManager.SCREEN_WIDTH);
+        shaderProgram.setUniformf("py", gc.getHero().getPosition().y / ScreenManager.SCREEN_HEIGTH);
+        batch.draw(frameBufferRegion, 0, 0);
+
+        batch.setShader(null);
+        gc.getHero().renderGUI(batch, font32);
+        if (gc.getRoundTimer() <= 3.0f) {
+            sb.clear();
+            sb.append("Level ").append(gc.getLevel());
+            font32.draw(batch, sb, 0, ScreenManager.HALF_SCREEN_HEIGTH,
+                    ScreenManager.SCREEN_WIDTH, Align.center, false);
+        }
         batch.end();
 
         gc.getStage().draw();

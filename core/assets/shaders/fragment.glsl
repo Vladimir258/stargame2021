@@ -13,12 +13,11 @@ void main() {
     float dst = sqrt((v_texCoords.x - px) * (v_texCoords.x - px)
                 + (v_texCoords.y - py) * (v_texCoords.y - py));
 
-        gl_FragColor.r *= (1.7f - dst * 1.5f);
-        gl_FragColor.g *= (1.7f - dst * 1.5f) ;
-        gl_FragColor.b *= (1.7f - dst * 1.5f) ;
-
-
-
+    if(dst > 0.2f) {
+        gl_FragColor.r *= (1.0f - (dst - 0.2) * 0.7f);
+        gl_FragColor.g *= (1.0f - (dst - 0.2) * 0.7f);
+        gl_FragColor.b *= (1.0f - (dst - 0.2) * 0.7f);
+    }
 
   //float dst = sqrt((v_texCoords.x - px) * (v_texCoords.x - px)
   //              + (v_texCoords.y - py) * (v_texCoords.y - py));
