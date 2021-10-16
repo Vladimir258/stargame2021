@@ -42,6 +42,7 @@ public class Assets {
                 createStandardFont(72);
                 createStandardFont(48);
                 createStandardFont(24);
+                assetManager.load("audio/music.mp3", Music.class);
                 break;
             case MENU:
                 assetManager.load("images/game.pack", TextureAtlas.class);
