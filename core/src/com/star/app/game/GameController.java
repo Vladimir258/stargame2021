@@ -1,11 +1,13 @@
 package com.star.app.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.star.app.screen.ScreenManager;
+import com.star.app.screen.utils.Assets;
 
 public class GameController {
     private Background background; // Наш бэкграунд
@@ -17,6 +19,7 @@ public class GameController {
     private Stage stage;
     private int level;
     private float roundTimer;
+    private Music music;
 
     public float getRoundTimer() {
         return roundTimer;
@@ -68,7 +71,9 @@ public class GameController {
         this.particleController = new ParticleController();
         this.level = 1;
         this.roundTimer = 0.0f;
-
+        this.music = Assets.getInstance().getAssetManager().get("audio/mortal.mp3");
+        this.music.setLooping(true);
+        this.music.play();
         generateBigAsteroids(1);
     }
 
@@ -98,12 +103,11 @@ public class GameController {
             // Если закончились астероиды
             if(enemyController.getActiveList().size() == 0) {
                 level++;
-                generateBigAsteroids(level);
+                // (level <= 3 ? level : 3) вместо просто (level), чтоб после 3его уровня не появлялось больше 3х астероидов
+                generateBigAsteroids(level <= 3 ? level : 3);
                 roundTimer = 0.0f;
             }
-
             stage.act(dt);
-
         }
     }
 
